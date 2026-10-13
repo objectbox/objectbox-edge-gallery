@@ -37,7 +37,24 @@ Run all commands from `Android/src/`. CI (`.github/workflows/build_android.yaml`
 ./gradlew installDebug       # install on a connected device
 ```
 
-There are no unit or instrumentation tests in the repo, although the test dependencies are declared in Gradle. No lint or format task is configured either. Existing code uses 2-space indentation in the ktfmt Google style, so keep new code in that style.
+No lint or format task is configured. Existing code uses 2-space indentation in the ktfmt Google style, so keep new code in that style.
+
+## Tests
+
+Upstream ships no tests; all tests in this repo were added by the fork. There are three source sets:
+- `app/src/test/`: JVM unit tests, no device needed. `unitTests.isReturnDefaultValues` is on, so framework calls like `android.util.Log` are no-ops instead of throwing.
+- `app/src/androidTest/`: instrumentation tests. They need a running device or emulator, because MediaPipe's `SqliteVectorStore` and `SemanticRetriever` are native code built only for Android.
+- `app/src/sharedTest/kotlin/`: compiled into both of the above. Contract tests and helpers live here (e.g. `FakeEmbedder` and `axisVector` in `TestVectors.kt`), so the same tests run against the JVM and the on-device implementations.
+
+```bash
+./gradlew testDebugUnitTest                                   # JVM tests
+./gradlew testDebugUnitTest --tests '*SomeTest*'              # single JVM test class
+./gradlew connectedDebugAndroidTest                           # instrumentation tests on a device/emulator
+./gradlew connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.google.ai.edge.gallery.SomeTest  # single class
+```
+
+A headless emulator works for instrumentation tests: `emulator -avd <name> -no-window -no-audio -no-snapshot-save`, then `adb wait-for-device`. Use an x86_64 image with API 31 or newer.
 
 To make Hugging Face model downloads work in a local build, replace the placeholders in `common/ProjectConfig.kt` (`clientId`, `redirectUri`) and `manifestPlaceholders["appAuthRedirectScheme"]` in `app/build.gradle.kts` (see `DEVELOPMENT.md`). The `google-services` plugin is declared with `apply false`, and the repo contains no `google-services.json`.
 

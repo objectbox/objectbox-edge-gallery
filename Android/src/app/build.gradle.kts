@@ -67,6 +67,14 @@ android {
     buildConfig = true
   }
   packaging { jniLibs { pickFirsts.add("**/liblitertlm_jni.so") } }
+  // Lets JVM unit tests run code that calls android.util.Log and similar framework stubs.
+  testOptions { unitTests.isReturnDefaultValues = true }
+  // Test code shared by JVM unit tests (test) and instrumentation tests (androidTest), e.g.
+  // contract tests that run against both in-memory and on-device implementations.
+  sourceSets {
+    getByName("test").kotlin.srcDir("src/sharedTest/kotlin")
+    getByName("androidTest").kotlin.srcDir("src/sharedTest/kotlin")
+  }
 }
 
 kotlin {
@@ -121,6 +129,7 @@ dependencies {
   ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
   annotationProcessor("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
   testImplementation(libs.junit)
+  androidTestImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(platform(libs.androidx.compose.bom))
