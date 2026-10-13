@@ -64,7 +64,7 @@ data class SemanticRetrievalResult(
 )
 
 /** In-memory [VectorStore] implementation for unit tests and JVM / fallback environments. */
-private class InMemoryVectorStore : VectorStore {
+internal class InMemoryVectorStore : VectorStore {
   private val records = ConcurrentHashMap<String, RetrievalRecord>()
 
   val allIds: Set<String>

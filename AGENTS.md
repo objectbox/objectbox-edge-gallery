@@ -17,6 +17,8 @@ Where SQLite is used today (all of it through MediaPipe's `VectorStore` API):
 - `services/semanticretrieval/SemanticRetrievalService.kt` creates the `SqliteVectorStore` and falls back to `InMemoryVectorStore`. The `VectorStore` interface (`customVectorStore` parameter) is the natural place to plug in ObjectBox. `SQLITE_RESERVED_METADATA_KEYS` is a workaround for a SQLite-specific bug.
 - These callers each open their own `.db` file: `customtasks/smartalbum/` (`SemanticRetrievalServiceProvider`, `SmartAlbumIndexingWorker`, `SampleAlbumStorageManager`, which also deletes SQLite WAL/SHM files), `customtasks/videomomentfinder/VideoMomentFinderTask.kt`, and `services/semanticretrieval/GemmaEmbeddingModelStore.kt`.
 
+The vector search baseline is pinned down by contract tests in `app/src/sharedTest/` (see Tests below). A replacement store must pass `VectorStoreContractTest`, and the service with it must pass `SemanticRetrievalServiceContractTest`. One SQLite quirk to know about: the raw `SqliteVectorStore.upsert` duplicates existing ids, and only `SemanticRetriever` hides this. A replacement store should replace existing ids itself.
+
 Other app state is stored in Proto DataStore files, not SQLite (see Persistence below). Whether to move that to ObjectBox too is also still undecided.
 
 (Paths are relative to `Android/src/app/src/main/java/com/google/ai/edge/gallery/`.)
