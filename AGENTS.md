@@ -28,6 +28,7 @@ Top-level layout:
 - `model_allowlists/<version>.json`: model catalogs that the app downloads at runtime (see below). `model_allowlist.json` at the root is a legacy copy.
 - `skills/`: example Agent Skills (`built-in/`, `featured/`), published to GitHub Pages by `.github/workflows/static.yml`. `skills/README.md` is the spec for the skill format (`SKILL.md` frontmatter, the `run_js` entry point `window.ai_edge_gallery_get_result`, `run_intent`, secrets).
 - `mcp/README.md`: user docs for the MCP client integration.
+- The vector test data (popular English Wikipedia pages embedded with EmbeddingGemma 2, reference queries with exact nearest neighbors) is built by a separate repo, `wikipedia-embedding-gemma-2` (`../wikipedia-embedding-gemma-2` locally). Its `data/export/android/` holds fvecs/ivecs files and a `manifest.json` for the on-device quality and performance tests.
 
 ## Build
 
