@@ -1,0 +1,2 @@
+timestamp,device,store,corpus,dimension,insert_ns,get_100_ids_ns,embeddings_exact,reopen_and_get_all_ids_ns,disk_bytes
+2026-10-14T09:00:00.933400Z,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",ObjectBoxVectorStoreWideSearch,1000,768,166099060,981005,true,1144073,4202496

@@ -33,16 +33,14 @@ import org.junit.runner.RunWith
  *   -Pandroid.testInstrumentationRunnerArguments.class=com.google.ai.edge.gallery.services.semanticretrieval.SqliteVectorStoreBenchmark \
  *   -Pandroid.testInstrumentationRunnerArguments.vectorData=/data/local/tmp/wikipedia-embedding-gemma-2
  * ```
+ * See [DeviceBenchmark] for where the results go.
  */
 @RunWith(AndroidJUnit4::class)
 class SqliteVectorStoreBenchmark : VectorStoreBenchmark() {
-  override val dataDir: File? =
-    InstrumentationRegistry.getArguments().getString("vectorData")?.let(::File)
-
+  override val dataDir = DeviceBenchmark.dataDir
+  override val outputDir = DeviceBenchmark.outputDir
+  override val device = DeviceBenchmark.device
   override val persistent = true
-
-  private val directory =
-    File(InstrumentationRegistry.getInstrumentation().targetContext.filesDir, "benchmark")
 
   // Like the app, pass an absolute path as the database name.
   override fun createStore(name: String): VectorStore =
@@ -58,8 +56,10 @@ class SqliteVectorStoreBenchmark : VectorStoreBenchmark() {
     sqliteFiles(name).forEach { it.delete() }
   }
 
-  private fun databaseFile(name: String) = File(directory, "$name.db")
+  private fun databaseFile(name: String) = File(DeviceBenchmark.storageDir, "$name.db")
 
   private fun sqliteFiles(name: String) =
-    listOf("", "-wal", "-shm", "-journal").map { File(directory, "$name.db$it") }.filter { it.exists() }
+    listOf("", "-wal", "-shm", "-journal")
+      .map { File(DeviceBenchmark.storageDir, "$name.db$it") }
+      .filter { it.exists() }
 }

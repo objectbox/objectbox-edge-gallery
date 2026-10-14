@@ -1,0 +1,2 @@
+timestamp,device,store,corpus,dimension,insert_ns,get_100_ids_ns,embeddings_exact,reopen_and_get_all_ids_ns,disk_bytes
+2026-10-14T09:04:14.335248328Z,"Linux amd64, 32 CPUs, Java 25.0.3",ObjectBoxVectorStoreWideSearch,10000,768,2560761277,491855,true,4876469,45391872

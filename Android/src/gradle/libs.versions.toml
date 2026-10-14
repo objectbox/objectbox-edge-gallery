@@ -39,6 +39,7 @@ securityCrypto = "1.1.0"
 kotlinReflect = "2.4.0"
 moshi = "1.15.2"
 ksp = "2.3.6"
+objectbox = "5.4.2"
 mlkit-genai-prompt = "1.0.0-beta2"  # Ref: https://developers.google.com/ml-kit/genai/prompt/android/get-started#configure-project
 mcp = "0.8.0"
 ktor = "3.4.3"
@@ -50,6 +51,7 @@ coil = "2.7.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+objectbox-linux = { group = "io.objectbox", name = "objectbox-linux", version.ref = "objectbox" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
@@ -120,3 +122,5 @@ hilt-application = { id = "com.google.dagger.hilt.android", version.ref = "hilt"
 oss-licenses = {id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicenses"}
 google-services = { id = "com.google.gms.google-services", version.ref = "googleService" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+objectbox = { id = "io.objectbox", version.ref = "objectbox" }
+android-legacy-kapt = { id = "com.android.legacy-kapt", version.ref = "agp" }

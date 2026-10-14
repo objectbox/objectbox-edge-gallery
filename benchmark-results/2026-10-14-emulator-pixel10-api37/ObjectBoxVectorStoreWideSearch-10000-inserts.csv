@@ -1,0 +1,11 @@
+store,corpus,first_row,rows,latency_ns
+ObjectBoxVectorStoreWideSearch,10000,0,1000,150490018
+ObjectBoxVectorStoreWideSearch,10000,1000,1000,257417343
+ObjectBoxVectorStoreWideSearch,10000,2000,1000,306502002
+ObjectBoxVectorStoreWideSearch,10000,3000,1000,305619375
+ObjectBoxVectorStoreWideSearch,10000,4000,1000,339934971
+ObjectBoxVectorStoreWideSearch,10000,5000,1000,355033310
+ObjectBoxVectorStoreWideSearch,10000,6000,1000,386692436
+ObjectBoxVectorStoreWideSearch,10000,7000,1000,439739395
+ObjectBoxVectorStoreWideSearch,10000,8000,1000,454917452
+ObjectBoxVectorStoreWideSearch,10000,9000,1000,472694971

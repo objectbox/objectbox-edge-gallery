@@ -1,0 +1,2 @@
+timestamp,device,store,corpus,dimension,insert_ns,get_100_ids_ns,embeddings_exact
+2026-10-14T09:02:14.729900048Z,"Linux amd64, 32 CPUs, Java 25.0.3",InMemoryVectorStore,100000,768,20798102,42199,true

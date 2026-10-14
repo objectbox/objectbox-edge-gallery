@@ -1,0 +1,11 @@
+store,corpus,first_row,rows,latency_ns
+InMemoryVectorStore,10000,0,1000,144388
+InMemoryVectorStore,10000,1000,1000,145359
+InMemoryVectorStore,10000,2000,1000,150338
+InMemoryVectorStore,10000,3000,1000,295187
+InMemoryVectorStore,10000,4000,1000,133978
+InMemoryVectorStore,10000,5000,1000,121389
+InMemoryVectorStore,10000,6000,1000,400016
+InMemoryVectorStore,10000,7000,1000,126539
+InMemoryVectorStore,10000,8000,1000,119429
+InMemoryVectorStore,10000,9000,1000,117638

@@ -1,0 +1,11 @@
+store,corpus,first_row,rows,latency_ns
+SqliteVectorStore,10000,0,1000,312702277
+SqliteVectorStore,10000,1000,1000,270324396
+SqliteVectorStore,10000,2000,1000,264704821
+SqliteVectorStore,10000,3000,1000,252411970
+SqliteVectorStore,10000,4000,1000,263190305
+SqliteVectorStore,10000,5000,1000,237266352
+SqliteVectorStore,10000,6000,1000,245002503
+SqliteVectorStore,10000,7000,1000,247839440
+SqliteVectorStore,10000,8000,1000,254280301
+SqliteVectorStore,10000,9000,1000,239631275

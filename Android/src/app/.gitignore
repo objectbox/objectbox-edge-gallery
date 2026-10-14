@@ -16,3 +16,5 @@
 
 /build
 /release
+# Native library that ObjectBox extracts when JVM unit tests run.
+/libobjectbox-jni-*

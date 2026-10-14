@@ -20,6 +20,7 @@ import com.google.mediapipe.tasks.core.TextPart
 import com.google.mediapipe.tasks.retrieval.components.VectorStore
 import com.google.mediapipe.tasks.retrieval.model.RetrievalRecord
 import java.io.File
+import java.time.Instant
 import java.util.Locale
 import kotlin.math.ceil
 import kotlin.system.measureNanoTime
@@ -34,11 +35,16 @@ import org.junit.runners.MethodSorters
  *
  * For each corpus size, a new store gets the first N vectors of the data set. The benchmark then
  * measures insert time, search latency and recall@10 against the exact neighbors for the reference
- * queries at several top-K values, a search filtered by metadata, getting records by id, reopening
- * the store (if it persists) and its size on disk.
+ * queries at several top-K values, a search filtered by metadata, getting records by id (also
+ * checking that the store returns the embeddings unchanged), reopening the store (if it persists)
+ * and its size on disk.
  *
  * Opt-in: the tests only run when [dataDir] points to the data set and are skipped otherwise.
- * Results are printed as lines starting with [TAG], including one JSON line per corpus size.
+ * A summary is printed as lines starting with [TAG]. If [outputDir] is set, every measurement is
+ * also written there as CSV, three files per store and corpus size:
+ * - `<store>-<size>-run.csv`: one row with the run's totals.
+ * - `<store>-<size>-searches.csv`: one row per search, with its latency and all returned ids.
+ * - `<store>-<size>-inserts.csv`: one row per inserted batch.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 abstract class VectorStoreBenchmark {
@@ -47,6 +53,15 @@ abstract class VectorStoreBenchmark {
 
   /** Creates the store under test, backed by storage named [name]. */
   protected abstract fun createStore(name: String): VectorStore
+
+  /** Directory for the CSV files, or null to only print a summary. */
+  protected open val outputDir: File? = System.getProperty("benchmarkOutput")?.let(::File)
+
+  /** Describes the machine the benchmark runs on; recorded with the results. */
+  protected open val device: String =
+    "${System.getProperty("os.name")} ${System.getProperty("os.arch")}, " +
+      "${Runtime.getRuntime().availableProcessors()} CPUs, " +
+      "Java ${System.getProperty("java.version")}"
 
   /** Whether a store created again with the same name has the records of the closed one. */
   protected open val persistent: Boolean = false
@@ -70,54 +85,109 @@ abstract class VectorStoreBenchmark {
     assumeTrue("Data set has only ${data.corpusSize} vectors", size <= data.corpusSize)
     val storeName = javaClass.simpleName.removeSuffix("Benchmark")
     val name = "benchmark-$storeName-$size"
+    val run = linkedMapOf<String, Any>(
+      "timestamp" to Instant.now().toString(),
+      "device" to device,
+      "store" to storeName,
+      "corpus" to size,
+      "dimension" to data.dimension,
+    )
+    val summary = linkedMapOf<String, Any>()
+    val inserts = mutableListOf<List<Any>>()
+    val searches = mutableListOf<List<Any>>()
     deleteStorage(name)
-    val report = mutableMapOf<String, Any>("store" to storeName, "corpus" to size)
     var store = createStore(name)
     try {
       var insertNanos = 0L
       for (from in 0 until size step INSERT_BATCH) {
         val vectors = data.corpus(from, minOf(INSERT_BATCH, size - from))
         val records = vectors.mapIndexed { i, vector -> record(data, from + i, vector) }
-        insertNanos += measureNanoTime { store.upsert(records) }
+        val nanos = measureNanoTime { store.upsert(records) }
+        inserts += listOf(from, records.size, nanos)
+        insertNanos += nanos
       }
-      report["insert_ms"] = insertNanos / 1e6
-      report["insert_per_s"] = size / (insertNanos / 1e9)
+      run["insert_ns"] = insertNanos
+      summary["insert_ms"] = insertNanos / 1e6
+      summary["insert_per_s"] = size / (insertNanos / 1e9)
 
       val truth = data.groundTruth(size)
       repeat(WARMUP_QUERIES) { store.search(data.queries[it % data.queries.size], RECALL_AT) }
       for (topK in TOP_KS) {
-        report["search_k$topK"] =
-          measureSearches(data.queries, truth, expected = minOf(topK, size)) { store.search(it, topK) }
+        summary["search_k$topK"] =
+          measureSearches("k$topK", data.queries, truth, minOf(topK, size), searches) {
+            store.search(it, topK)
+          }
       }
 
       val filter = mapOf(BUCKET_KEY to FILTER_BUCKET.toString())
       val filteredTruth = exactNeighbors(data, size) { row -> row % BUCKETS == FILTER_BUCKET }
-      report["search_k${RECALL_AT}_filtered"] =
-        measureSearches(data.queries, filteredTruth, expected = minOf(RECALL_AT, size / BUCKETS)) {
+      summary["search_k${RECALL_AT}_filtered"] =
+        measureSearches(
+          "k${RECALL_AT}_filtered",
+          data.queries,
+          filteredTruth,
+          minOf(RECALL_AT, size / BUCKETS),
+          searches,
+        ) {
           store.search(it, RECALL_AT, filter)
         }
 
       val ids = List(GET_IDS) { (it.toLong() * size / GET_IDS).toString() }
       lateinit var fetched: List<RetrievalRecord>
-      report["get_${GET_IDS}_ids_ms"] = measureNanoTime { fetched = store.get(ids) } / 1e6
+      val getNanos = measureNanoTime { fetched = store.get(ids) }
       assertEquals(ids.toSet(), fetched.map { it.id }.toSet())
+      run["get_${GET_IDS}_ids_ns"] = getNanos
+      summary["get_${GET_IDS}_ids_ms"] = getNanos / 1e6
+      // Bit-exact, full-length embeddings: no truncation, quantization or other loss.
+      val exact = fetched.all { it.embeddings.contentEquals(data.corpus(it.id.toInt(), 1)[0]) }
+      run["embeddings_exact"] = exact
+      summary["embeddings_exact"] = exact
 
       if (persistent) {
         store.close()
         lateinit var allIds: List<String>
-        report["reopen_and_get_all_ids_ms"] =
-          measureNanoTime {
-            store = createStore(name)
-            allIds = store.getAllRecordIds()
-          } / 1e6
+        val reopenNanos = measureNanoTime {
+          store = createStore(name)
+          allIds = store.getAllRecordIds()
+        }
         assertEquals(size, allIds.size)
+        run["reopen_and_get_all_ids_ns"] = reopenNanos
+        summary["reopen_and_get_all_ids_ms"] = reopenNanos / 1e6
       }
     } finally {
       store.close()
     }
-    storageBytes(name)?.let { report["disk_mb"] = it / 1e6 }
+    storageBytes(name)?.let {
+      run["disk_bytes"] = it
+      summary["disk_mb"] = it / 1e6
+    }
     deleteStorage(name)
-    print(report)
+    print(storeName, size, summary)
+    outputDir?.let { out ->
+      out.mkdirs()
+      val prefix = "$storeName-$size"
+      writeCsv(File(out, "$prefix-run.csv"), run.keys.toList(), listOf(run.values.toList()))
+      val key = listOf(storeName, size)
+      writeCsv(
+        File(out, "$prefix-searches.csv"),
+        listOf(
+          "store",
+          "corpus",
+          "search",
+          "query",
+          "latency_ns",
+          "returned",
+          "hits_at_$RECALL_AT",
+          "ids",
+        ),
+        searches.map { key + it },
+      )
+      writeCsv(
+        File(out, "$prefix-inserts.csv"),
+        listOf("store", "corpus", "first_row", "rows", "latency_ns"),
+        inserts.map { key + it },
+      )
+    }
   }
 
   private fun record(data: VectorDataset, row: Int, vector: FloatArray) =
@@ -129,16 +199,19 @@ abstract class VectorStoreBenchmark {
     )
 
   /**
-   * Runs [search] for every query and returns latency percentiles in ms and recall@10 against
-   * [truth]; also checks that each search returns [expected] records.
+   * Runs [search] for every query, adds a row per search to [rows], and returns latency
+   * percentiles in ms and recall@10 against [truth]. Checks that each search returns [expected]
+   * records.
    *
    * A result counts as a hit if it is one of the true top 10, or if it ties with the 10th: its
    * similarity is within [TIE_TOLERANCE], below which float rounding decides the order.
    */
   private fun measureSearches(
+    name: String,
     queries: List<FloatArray>,
     truth: List<VectorDataset.Neighbors>,
     expected: Int,
+    rows: MutableList<List<Any>>,
     search: (FloatArray) -> List<RetrievalRecord>,
   ): Map<String, Double> {
     val nanos = LongArray(queries.size)
@@ -149,11 +222,14 @@ abstract class VectorStoreBenchmark {
       assertEquals("results for query $q", expected, found.size)
       val relevant = truth[q].rows.take(RECALL_AT).toSet()
       val tenthScore = truth[q].scores[minOf(RECALL_AT, truth[q].scores.size) - 1]
-      hits +=
+      val queryHits =
         found.take(RECALL_AT).count {
           it.id.toInt() in relevant ||
-            (it.embeddings.size == query.size && dot(query, it.embeddings) >= tenthScore - TIE_TOLERANCE)
+            (it.embeddings.size == query.size &&
+              dot(query, it.embeddings) >= tenthScore - TIE_TOLERANCE)
         }
+      hits += queryHits
+      rows += listOf(name, q, nanos[q], found.size, queryHits, found.joinToString(" ") { it.id })
     }
     nanos.sort()
     fun percentileMs(p: Double) = nanos[ceil(p * nanos.size).toInt() - 1] / 1e6
@@ -165,10 +241,9 @@ abstract class VectorStoreBenchmark {
     )
   }
 
-  private fun print(report: Map<String, Any>) {
-    println("$TAG ${report["store"]}, corpus ${report["corpus"]}")
-    for ((key, value) in report) {
-      if (key == "store" || key == "corpus") continue
+  private fun print(store: String, size: Int, summary: Map<String, Any>) {
+    println("$TAG $store, corpus $size")
+    for ((key, value) in summary) {
       val text =
         when (value) {
           is Map<*, *> -> value.entries.joinToString(", ") { (k, v) -> "$k ${format(v)}" }
@@ -176,7 +251,6 @@ abstract class VectorStoreBenchmark {
         }
       println("$TAG   $key: $text")
     }
-    println("$TAG JSON ${toJson(report)}")
   }
 
   companion object {
@@ -251,12 +325,17 @@ abstract class VectorStoreBenchmark {
         else -> value.toString()
       }
 
-    private fun toJson(value: Any?): String =
-      when (value) {
-        is Map<*, *> -> value.entries.joinToString(",", "{", "}") { (k, v) -> "\"$k\":${toJson(v)}" }
-        is String -> "\"$value\""
-        is Double -> String.format(Locale.ROOT, "%.4f", value)
-        else -> value.toString()
+    /** Writes an RFC 4180 CSV file; text fields are quoted when needed. */
+    private fun writeCsv(file: File, header: List<String>, rows: List<List<Any>>) {
+      fun field(value: Any): String {
+        val text = value.toString()
+        val quote = text.any { it == ',' || it == '"' || it == '\n' }
+        return if (quote) "\"${text.replace("\"", "\"\"")}\"" else text
       }
+      file.bufferedWriter().use { out ->
+        out.write(header.joinToString(",") + "\n")
+        for (row in rows) out.write(row.joinToString(",") { field(it) } + "\n")
+      }
+    }
   }
 }

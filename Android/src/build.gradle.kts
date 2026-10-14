@@ -22,4 +22,6 @@ plugins {
   alias(libs.plugins.kotlin.compose) apply false
   alias(libs.plugins.hilt.application) apply false
   alias(libs.plugins.ksp) apply false
+  alias(libs.plugins.objectbox) apply false
+  alias(libs.plugins.android.legacy.kapt) apply false
 }

@@ -1,0 +1,2 @@
+store,corpus,first_row,rows,latency_ns
+InMemoryVectorStore,1000,0,1000,215668

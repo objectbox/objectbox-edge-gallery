@@ -1,0 +1,10 @@
+store,corpus,device,insert_per_s,k10_p50_ms,k10_p99_ms,k10_recall_at_10,k100_p50_ms,k100_p99_ms,k100_recall_at_10,k1000_p50_ms,k1000_p99_ms,k1000_recall_at_10,k10_filtered_p50_ms,k10_filtered_p99_ms,k10_filtered_recall_at_10,get_100_ids_ms,reopen_ms,disk_mb,embeddings_exact
+ObjectBoxVectorStore,1000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",5577.4,0.336,0.483,0.847,1.923,7.894,0.996,18.294,27.047,1.0,0.736,5.032,0.996,1.242,1.698,4.2,true
+ObjectBoxVectorStoreWideSearch,1000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",6020.5,0.966,8.7,0.997,1.227,8.55,0.997,17.421,28.286,1.0,0.366,4.925,0.994,0.981,1.144,4.2,true
+SqliteVectorStore,1000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",2378.7,3.73,4.081,1.0,9.755,19.362,1.0,78.868,92.794,1.0,1.591,6.75,1.0,4.589,2.1,4.1,true
+ObjectBoxVectorStore,10000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",2809.7,0.26,0.486,0.872,1.546,7.505,0.987,20.082,29.393,1.0,1.369,7.221,0.959,1.117,5.497,44.7,true
+ObjectBoxVectorStoreWideSearch,10000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",2882.6,1.313,7.184,0.987,1.451,6.666,0.987,18.716,26.224,1.0,0.706,8.714,0.968,1.244,5.76,44.8,true
+SqliteVectorStore,10000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",3865.0,30.168,33.139,1.0,34.518,40.153,1.0,100.766,119.483,1.0,14.011,18.123,1.0,16.924,14.228,41.1,true
+ObjectBoxVectorStore,100000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",1186.8,0.501,1.084,0.899,2.497,10.445,0.99,20.946,29.241,1.0,2.424,16.829,0.974,1.275,57.383,462.8,true
+ObjectBoxVectorStoreWideSearch,100000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",1185.5,1.893,8.989,0.99,2.016,7.257,0.99,20.402,27.549,1.0,1.635,8.192,0.973,1.357,61.922,461.9,true
+SqliteVectorStore,100000,"Google sdk_gphone16k_x86_64, Android 17 (API 37), x86_64, 4 CPUs",4595.9,298.605,312.906,1.0,304.653,311.467,1.0,368.539,407.469,1.0,139.431,146.217,1.0,87.636,131.863,410.6,true

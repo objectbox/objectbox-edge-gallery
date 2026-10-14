@@ -26,6 +26,11 @@ plugins {
   alias(libs.plugins.hilt.application)
   alias(libs.plugins.oss.licenses)
   alias(libs.plugins.ksp)
+  // kapt for ObjectBox's annotation processor (with AGP 9's built-in Kotlin, ObjectBox < 6 needs it
+  // applied explicitly).
+  alias(libs.plugins.android.legacy.kapt)
+  // Applied last, as ObjectBox requires: it configures code generation for @Entity classes.
+  alias(libs.plugins.objectbox)
 }
 
 android {
@@ -75,6 +80,11 @@ android {
       providers.gradleProperty("vectorData").orNull?.let {
         test.systemProperty("vectorData", rootProject.file(it).absolutePath)
       }
+      // ...and writes its raw results (CSV) here.
+      test.systemProperty(
+        "benchmarkOutput",
+        layout.buildDirectory.dir("outputs/vector-store-benchmark").get().asFile.absolutePath,
+      )
       // The in-memory store holds the benchmark's 100k vectors (~300 MB) on the heap.
       test.maxHeapSize = "2g"
     }
@@ -139,6 +149,8 @@ dependencies {
   ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
   annotationProcessor("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
   testImplementation(libs.junit)
+  // ObjectBox native library for JVM unit tests (the app itself uses objectbox-android).
+  testImplementation(libs.objectbox.linux)
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)

@@ -1,0 +1,71 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:8904125476098149464",
+      "lastPropertyId": "8:8526990259245421252",
+      "name": "VectorRecordEntity",
+      "properties": [
+        {
+          "id": "1:8660580722156338246",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3061646634499281795",
+          "name": "recordId",
+          "indexId": "1:560348298322956351",
+          "type": 9,
+          "flags": 34848
+        },
+        {
+          "id": "3:6522927124553023087",
+          "name": "embedding",
+          "indexId": "2:5769547358586932670",
+          "type": 28,
+          "flags": 8
+        },
+        {
+          "id": "4:1219308090285320000",
+          "name": "metadata",
+          "type": 13
+        },
+        {
+          "id": "5:2900296518249028435",
+          "name": "contentTypes",
+          "type": 30
+        },
+        {
+          "id": "6:4077985740842354793",
+          "name": "contentValues",
+          "type": 30
+        },
+        {
+          "id": "7:3640343918009329712",
+          "name": "parentId",
+          "type": 9
+        },
+        {
+          "id": "8:8526990259245421252",
+          "name": "childIds",
+          "type": 30
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "1:8904125476098149464",
+  "lastIndexId": "2:5769547358586932670",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}
