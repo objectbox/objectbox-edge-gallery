@@ -4,6 +4,31 @@ Raw results of `VectorStoreBenchmark` (see AGENTS.md, "Vector store benchmark"),
 benchmark session: `<date>-<machine>`. The data set is `wikipedia-embedding-gemma-2` (popular
 English Wikipedia pages, EmbeddingGemma 2, 768 dimensions, 100 reference queries).
 
+## Results on the device (emulator), 100k vectors
+
+From [`2026-10-14-emulator-pixel10-api37`](2026-10-14-emulator-pixel10-api37/summary.csv): Android
+emulator (Pixel 10 AVD, Android 17, x86_64, 4 cores). Emulator numbers are good for comparing the
+stores, not as absolute numbers for a phone.
+
+| | SQLite | ObjectBox, default | ObjectBox, wide (≥100 candidates) |
+|---|---:|---:|---:|
+| Search top-10, p50 | 299 ms | 0.50 ms | 1.9 ms |
+| Recall@10 | 1.000 | 0.899 | 0.990 |
+| Search top-1000, p50 | 369 ms | 21 ms | 20 ms |
+| Filtered top-10 (10% match), p50 | 139 ms | 2.4 ms | 1.6 ms |
+| Filtered recall@10 | 1.000 | 0.974 | 0.973 |
+| Insert rate | 4,596/s | 1,187/s | 1,186/s |
+| Reopen + list all ids | 132 ms | 57 ms | 62 ms |
+| Disk size | 411 MB | 463 MB | 462 MB |
+
+SQLite is MediaPipe's `SqliteVectorStore` (the app's current store, exact search). ObjectBox is
+`ObjectBoxVectorStore` with ObjectBox 5.4.2 and default HNSW parameters; "wide" searches at least
+100 candidates and returns the best top-K.
+
+![Search latency, top-10, by corpus size](2026-10-14-emulator-pixel10-api37/latency.svg)
+
+## Files
+
 Each directory has three CSV files per store and corpus size (`<store>-<corpus>-*.csv`):
 
 | file | rows | columns |
