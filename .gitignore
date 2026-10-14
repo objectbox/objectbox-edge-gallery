@@ -1,1 +1,3 @@
 .DS_Store
+# IntelliJ IDEA / Android Studio project files
+.idea/
