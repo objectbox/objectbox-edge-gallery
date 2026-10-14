@@ -21,7 +21,9 @@ stores, not as absolute numbers for a phone.
 | Reopen + list all ids | 132 ms | 57 ms | 62 ms |
 | Disk size | 411 MB | 463 MB | 462 MB |
 
-SQLite is MediaPipe's `SqliteVectorStore` (the app's current store, exact search). ObjectBox is
+SQLite is MediaPipe's `SqliteVectorStore` (the app's current store). It is MediaPipe's own C++ code
+on a plain SQLite table (`rag_vector_store`), not sqlite-vec: there is no vector index, and every
+search scans all records, so it is exact and its latency grows linearly. ObjectBox is
 `ObjectBoxVectorStore` with ObjectBox 5.4.2 and default HNSW parameters; "wide" searches at least
 100 candidates and returns the best top-K.
 

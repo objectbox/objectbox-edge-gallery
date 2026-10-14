@@ -10,7 +10,7 @@ This is ObjectBox's fork of Google AI Edge Gallery (`google-ai-edge/gallery`), a
 
 **This fork exists to replace the app's SQLite storage with [ObjectBox](https://objectbox.io).** Most tasks in this repo serve that goal.
 
-- **Main focus: vector search.** The app's semantic search currently stores embeddings in MediaPipe's `SqliteVectorStore` and searches them there. Replace that with ObjectBox and its HNSW vector search.
+- **Main focus: vector search.** The app's semantic search currently stores embeddings in MediaPipe's `SqliteVectorStore` and searches them there. Replace that with ObjectBox and its HNSW vector search. `SqliteVectorStore` is MediaPipe's own C++ code (`sqlite_vector_store.cc`, bundled SQLite) on a plain table `rag_vector_store`, not sqlite-vec: no vector index, every search is a brute-force scan over all records.
 - **Likely next: all other storage.** We will probably replace all remaining SQLite storage as well. The details are still to be decided, so don't assume the scope beyond vector search is settled.
 
 Where SQLite is used today (all of it through MediaPipe's `VectorStore` API):
