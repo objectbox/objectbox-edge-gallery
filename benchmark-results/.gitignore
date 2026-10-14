@@ -1,0 +1,3 @@
+__pycache__/
+# High-resolution renders of the charts; plot.py recreates them, the SVGs are committed.
+*.png

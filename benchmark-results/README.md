@@ -19,6 +19,15 @@ rates from the raw files and checks that they are complete:
 python3 benchmark-results/summarize.py benchmark-results/*/
 ```
 
+`plot.py` draws two charts per directory from the same data, as SVG (committed) and high-resolution
+PNG (git-ignored): `latency` (median top-10 search latency by corpus size) and `recall`
+(recall@10 per search type at the largest corpus size). It needs matplotlib; `uv run` installs it
+on the fly:
+
+```bash
+uv run benchmark-results/plot.py benchmark-results/*/
+```
+
 Recall details: a result counts as a hit if it is a true top-10 neighbor, or if its similarity is
 within 1e-5 of the 10th neighbor's (a tie that float rounding decides). The true neighbors come
 from the data set's ground truth for that corpus size (the first N rows); for the filtered
