@@ -57,6 +57,20 @@ Upstream ships no tests; all tests in this repo were added by the fork. There ar
   -Pandroid.testInstrumentationRunnerArguments.class=com.google.ai.edge.gallery.SomeTest  # single class
 ```
 
+**Vector store benchmark.** `VectorStoreBenchmark` (sharedTest) measures a `VectorStore` on the real data set from `wikipedia-embedding-gemma-2` at 1k, 10k and 100k vectors: insert rate, search latency (p50/p90/p99) and recall@10 at top-K 10/100/1000, a metadata-filtered search, get by ids, reopen time and disk size. It is opt-in and skipped unless given the data set's Android export, and it prints its results as lines starting with `VectorStoreBenchmark` (logcat on a device). Subclasses: `SqliteVectorStoreBenchmark` (androidTest, the baseline) and `InMemoryVectorStoreBenchmark` (JVM, exact search, so recall must be 1.0). A new store gets its own subclass.
+
+```bash
+./gradlew testDebugUnitTest --tests '*InMemoryVectorStoreBenchmark' --rerun \
+  -PvectorData=../../../wikipedia-embedding-gemma-2/data/export/android   # relative to Android/src
+adb push ../wikipedia-embedding-gemma-2/data/export/android/. /data/local/tmp/wikipedia-embedding-gemma-2/
+./gradlew connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.google.ai.edge.gallery.services.semanticretrieval.SqliteVectorStoreBenchmark \
+  -Pandroid.testInstrumentationRunnerArguments.vectorData=/data/local/tmp/wikipedia-embedding-gemma-2
+adb logcat -d | grep VectorStoreBenchmark
+```
+
+Emulator numbers are only good for comparing stores on the same machine; use a real phone for absolute numbers. The emulator needs about 4 GB of host RAM.
+
 A headless emulator works for instrumentation tests: `emulator -avd <name> -no-window -no-audio -no-snapshot-save`, then `adb wait-for-device`. Use an x86_64 image with API 31 or newer.
 
 To make Hugging Face model downloads work in a local build, replace the placeholders in `common/ProjectConfig.kt` (`clientId`, `redirectUri`) and `manifestPlaceholders["appAuthRedirectScheme"]` in `app/build.gradle.kts` (see `DEVELOPMENT.md`). The `google-services` plugin is declared with `apply false`, and the repo contains no `google-services.json`.

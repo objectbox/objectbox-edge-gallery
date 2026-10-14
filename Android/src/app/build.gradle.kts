@@ -67,8 +67,18 @@ android {
     buildConfig = true
   }
   packaging { jniLibs { pickFirsts.add("**/liblitertlm_jni.so") } }
-  // Lets JVM unit tests run code that calls android.util.Log and similar framework stubs.
-  testOptions { unitTests.isReturnDefaultValues = true }
+  testOptions {
+    // Lets JVM unit tests run code that calls android.util.Log and similar framework stubs.
+    unitTests.isReturnDefaultValues = true
+    unitTests.all { test ->
+      // VectorStoreBenchmark runs only when given its data set: -PvectorData=<dir>.
+      providers.gradleProperty("vectorData").orNull?.let {
+        test.systemProperty("vectorData", rootProject.file(it).absolutePath)
+      }
+      // The in-memory store holds the benchmark's 100k vectors (~300 MB) on the heap.
+      test.maxHeapSize = "2g"
+    }
+  }
   // Test code shared by JVM unit tests (test) and instrumentation tests (androidTest), e.g.
   // contract tests that run against both in-memory and on-device implementations.
   sourceSets {
